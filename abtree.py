@@ -55,7 +55,7 @@ class ABMLTreeNode():
     
     def print_subtree(self):
         """
-        Prints the subtree
+        Prints the subtree.
         """
         # Define the number of spaces
         pretext = self.depth * "|   " + "|---"
@@ -117,7 +117,7 @@ class ABTree():
     def best_split(self, X, Y, A, depth) -> tuple:
         """
         Given the X features and Y targets calculates the best split
-        for a decision tree
+        for a decision tree.
         """
         # Creating a dataset for spliting
         df = X.copy()
@@ -185,7 +185,7 @@ class ABTree():
 
     def _fit(self, X, Y, A, depth=0):
         """
-        Recursive method to create the ABML regression tree
+        Recursive internal method to create the ABML regression tree.
         """
         # Making a df from the data
         df = X.copy()
@@ -217,6 +217,9 @@ class ABTree():
         return curr_node
     
     def fit(self, X: pd.DataFrame, Y: list, A: list):
+        """
+        Methods that fits the tree.
+        """
         self.X = X
         self.Y = Y
         self.A = A
@@ -227,6 +230,9 @@ class ABTree():
         self.model = self._fit(X, Y, A, 0)
 
     def predict(self, xi):
+        """
+        Predicts the target value for a single example.
+        """
         curr_node = self.model
         
         while curr_node.node_type != "leaf":
@@ -239,12 +245,21 @@ class ABTree():
         return curr_node.ymean
 
     def predict_all(self, X):
+        """
+        Predicts the target value for all examples.
+        """
         return X.apply(self.predict, axis="columns")
     
     def evaluate(self, p, Y):
+        """
+        Evaluation function wrapper for cross-evaluation.
+        """
         return { name: f(Y, p) for name, f in metrics_map }
     
     def cross_evaluate(self, X, Y, A, folds=5, n=5, always_use_AE=False):
+        """
+        Performs cross-evaluation.
+        """
         scores = []
 
         rkf = RepeatedKFold(n_splits=folds, n_repeats=n, random_state=2652124)
@@ -267,6 +282,9 @@ class ABTree():
         return avg_scores
 
     def get_critical_info(self, xi):
+        """
+        Retrieves the critical example information.
+        """
         curr_node = self.model
         path = ""
         leaf_samples = None
@@ -283,6 +301,9 @@ class ABTree():
         return path, leaf_samples
 
     def get_critical_sample(self, X, Y, A, folds=5, n=5, always_use_AE=False):
+        """
+        Finds and prints the critical example.
+        """
         scores = np.zeros(len(Y))
 
         rkf = RepeatedKFold(n_splits=folds, n_repeats=n, random_state=2652124)
@@ -337,7 +358,7 @@ class ABTree():
 
     def print(self):
         """
-        Prints the ABML tree
+        Prints the ABML tree.
         """
         if self.model is not None:
             self.model.print_subtree()
@@ -346,6 +367,9 @@ class ABTree():
 
 
 def parse_arguments(args_ABML):
+    """
+    Parses the text arguments.
+    """
     parsed_args = []
     for arg in args_ABML:
         if isinstance(arg, str) and arg != "":
@@ -369,6 +393,9 @@ def parse_arguments(args_ABML):
 
 
 def generate_random_arguments(X, features, ratio_args=0.5):
+    """
+    Generates random arguments for the training set.
+    """
     args = []
     for _ in range(X.shape[0]):
         if random.random() < ratio_args:
@@ -386,6 +413,9 @@ def generate_random_arguments(X, features, ratio_args=0.5):
 
 
 if __name__ == "__main__":
+    """
+    Demonstrates the ABML tree package.
+    """
     use_random = False
     fit_print = True
     get_critical = True
