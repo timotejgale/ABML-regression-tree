@@ -78,7 +78,7 @@ class ABTree():
         max_depth=5,
         arg_penalty=0,
         depth_penalty=0,
-        enable_additive_arg_error=False,
+        additive_arg_error_rank=None,
     ):
         self.X = None
         self.Y = None
@@ -88,7 +88,7 @@ class ABTree():
         self.max_depth = max_depth
         self.arg_penalty = arg_penalty
         self.depth_penalty = depth_penalty
-        self.enable_additive_arg_error= enable_additive_arg_error
+        self.additive_arg_error_rank= additive_arg_error_rank
 
         self.n = None
         self.features = None
@@ -162,12 +162,14 @@ class ABTree():
 
                     # If the split does not correspond to arguments, multiply with penalty
                     # Arguments are currently "anti-arguments", the split should not evaluate any of these as true
+                    a_i = 0
                     for a in curr_args:
                         if eval(a):
                             mse_split = mse_split + mse_split * self.arg_penalty + mse_split * self.depth_penalty * (1 / (depth + 1))
                             #print("Split not corresponding to arg.", a, feature, value)
 
-                            if not self.enable_additive_arg_error:
+                            a_i += 1
+                            if self.additive_arg_error_rank is not None and a_i >= self.additive_arg_error_rank:
                                 break
 
                     # Checking if this is the best split so far
