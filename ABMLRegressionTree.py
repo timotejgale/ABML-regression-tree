@@ -357,6 +357,25 @@ def parse_arguments(args_ABML):
     
     return parsed_args
 
+
+def generate_random_arguments(X, features, ratio_args=0.5):
+    args = []
+    for _ in range(X.shape[0]):
+        if random.random() < ratio_args:
+            # get random feature and value from min/max
+            ftr = random.choice(features)
+            val = random.uniform(np.min(X[ftr]), np.max(X[ftr]))
+            op = ">" if random.random() >= 0.5 else "<"
+
+            arg = "{} {} {}".format(ftr, op, val)
+            print(arg)
+            args.append(arg)
+        else:
+            args.append(np.nan)
+    
+    return args
+
+
 if __name__ == "__main__":
     # Load and preprocess data.
     data = pd.read_csv("datasets/auto-mpg.csv")
