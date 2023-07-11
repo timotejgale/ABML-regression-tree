@@ -1,6 +1,7 @@
 # Imports.
 from collections import defaultdict
 import random
+import math
 
 import pandas as pd
 import numpy as np
@@ -11,7 +12,7 @@ from sklearn.model_selection import RepeatedKFold
 metrics_map = [
     ("Max. err.", max_error),
     ("R2", r2_score),
-    ("Explainer var.", explained_variance_score),
+    ("Explained var.", explained_variance_score),
     ("MAE", mean_absolute_error),
     ("MSE", mean_squared_error),
     ("MAPE", mean_absolute_percentage_error),
@@ -257,8 +258,13 @@ class ABTree():
 
             scores.append(self.evaluate(p, Y_test))
             
+        avg_scores = {}
         for name, _ in metrics_map:
-            print("{}: {}".format(name, np.mean([score[name] for score in scores])))
+            score = np.mean([score[name] for score in scores])
+            avg_scores[name] = score
+            print("{}: {}".format(name, score))
+
+        return avg_scores
 
     def get_critical_info(self, xi):
         curr_node = self.model
@@ -301,11 +307,13 @@ class ABTree():
             print("\nPath:\n")
             print(path)
             
-            leaf_X = leaf_samples[0]
-            leaf_X["Y"] = leaf_samples[1]
-            leaf_X["args"] = leaf_samples[2]
-            print("Leaf samples:\n")
-            print(leaf_X)
+            if leaf_samples:
+                leaf_X = leaf_samples[0]
+                leaf_X["Y"] = leaf_samples[1]
+                leaf_X["args"] = leaf_samples[2]
+                print("Leaf samples:\n")
+                print(leaf_X)
+                print(leaf_X.describe())
 
             df = X.copy()
             df["Y"] = Y
@@ -340,7 +348,7 @@ class ABTree():
 def parse_arguments(args_ABML):
     parsed_args = []
     for arg in args_ABML:
-        if arg is not np.nan:
+        if isinstance(arg, str) and arg != "":
             arg_array = []
             for arg_part in arg.split("&&"):
                 if "<" in arg_part:
@@ -370,7 +378,6 @@ def generate_random_arguments(X, features, ratio_args=0.5):
             op = ">" if random.random() >= 0.5 else "<"
 
             arg = "{} {} {}".format(ftr, op, val)
-            print(arg)
             args.append(arg)
         else:
             args.append(np.nan)
@@ -379,12 +386,14 @@ def generate_random_arguments(X, features, ratio_args=0.5):
 
 
 if __name__ == "__main__":
+    use_random = False
+    fit_print = True
+    get_critical = True
+    evaluate = True
+
     # Load and preprocess data.
     data = pd.read_csv("datasets/auto-mpg.csv")
-
     data = data[data["horsepower"]!="?"]
-
-    #args_ABML = parse_arguments(data["ABMLARGS"])
 
     features = ["horsepower", "weight", "acceleration"]
     for ft in features:
@@ -393,15 +402,30 @@ if __name__ == "__main__":
     X = data[features]
     Y = data["mpg"].values.tolist()
 
-    args_ABML = parse_arguments(generate_random_arguments(X, features))
+    # Parse the arguments
+    args = ""
+    if use_random:
+        args = generate_random_arguments(X, features)
+    else:
+        args = data["ABMLARGS"]
+    args_ABML = parse_arguments(args)
+    print("Using argument set: {}".format(list(filter(lambda a: a != "", args_ABML))))
 
+    # Create/fit the tree and evaluate
     tree = ABTree(max_depth=3, min_samples_split=3, arg_penalty=0.5)
-    #tree.fit(X, Y, args_ABML)
-    #tree.print()
     
-    #print(X.iloc[0])
-    #print(Y[0])
-    #print(tree.predict(X.iloc[0]))
+    if fit_print:
+        tree.fit(X, Y, args_ABML)
+        print("TREE ===================================")
+        tree.print()
 
-    #tree.get_critical_sample(X, Y, args_ABML)
-    tree.cross_evaluate(X, Y, args_ABML)
+        # Predict for one example
+        #print(X.iloc[0])
+        #print(Y[0])
+        #print(tree.predict(X.iloc[0]))
+
+    # Get critical example and evaluate
+    if get_critical:
+        tree.get_critical_sample(X, Y, args_ABML)
+    if evaluate:
+        tree.cross_evaluate(X, Y, args_ABML)
