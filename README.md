@@ -19,3 +19,22 @@ pip install -e .
 # Run the demo script.
 python abtree.py
 ```
+
+## Additional information and citing
+
+For a comprehensive understanding of the methodologies and principles behind this tool, please refer to our paper:
+
+Gale, T., & Guid, M. (2024, May). Argument-Based Regression Trees. In _2024 47th MIPRO ICT and Electronics Convention (MIPRO)_ (pp. 1-6). IEEE.
+
+This paper includes in-depth discussions on the methodologies, theoretical frameworks, and performance benchmarks of the tool. If you utilize or build upon this tool in your work, we would appreciate if you cite our paper. BibTeX format:
+
+```
+@inproceedings{gale2024argument,
+  title={Argument-Based Regression Trees},
+  author={Gale, Timotej and Guid, Matej},
+  booktitle={2024 47th MIPRO ICT and Electronics Convention (MIPRO)},
+  pages={1--6},
+  year={2024},
+  organization={IEEE}
+}
+```
